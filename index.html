@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Книжный клуб — подборщик следующей книги</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar__inner">
+    <div class="topbar__left">
+      <div class="brand">
+        <span class="brand__mark">К</span>
+        <div>
+          <div class="brand__title">Книжный клуб</div>
+          <div class="brand__sub">Каталог кандидатов и голосование</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <button id="homeBtn" class="nav__btn" type="button">Главный экран</button>
+        <button id="profileBtn" class="nav__btn" type="button" hidden>Мой профиль</button>
+      </nav>
+    </div>
+
+    <div class="voter">
+      <div id="authGuest">
+        <div class="voter__row">
+          <input id="authLogin" class="input" type="text" placeholder="Логин" maxlength="20" autocomplete="username">
+          <input id="authPassword" class="input" type="password" placeholder="Пароль" maxlength="50" autocomplete="current-password">
+          <button id="authSubmit" class="btn btn--ghost" type="button">Войти</button>
+        </div>
+        <div id="authError" class="voter__status voter__status--error" hidden></div>
+        <button id="authToggle" class="link-btn" type="button">Регистрация</button>
+      </div>
+      <div id="authUser" hidden>
+        <div class="voter__row">
+          <span class="voter__status is-ok">Вы: <b id="authName"></b></span>
+          <button id="logoutBtn" class="btn btn--ghost" type="button">Выйти</button>
+        </div>
+        <div class="voter__status">Ваш голос и комментарии сохраняются за аккаунтом</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="catalog">
+    <div class="section-head">
+      <h1 class="section-title">Каталог кандидатов</h1>
+      <div class="section-tools">
+        <label class="field field--inline">
+          <span class="field__label">Жанр</span>
+          <select id="genreFilter" class="input input--select">
+            <option value="all">Все жанры</option>
+          </select>
+        </label>
+        <label class="field field--inline">
+          <span class="field__label">Объём</span>
+          <select id="pagesFilter" class="input input--select">
+            <option value="all">Любой</option>
+            <option value="short">до 300 стр.</option>
+            <option value="mid">301–500 стр.</option>
+            <option value="long">больше 500 стр.</option>
+          </select>
+        </label>
+        <button id="resetFilters" class="btn btn--ghost" type="button">Сбросить фильтры</button>
+        <button id="clearCatalog" class="btn btn--ghost btn--danger" type="button">Очистить каталог</button>
+      </div>
+    </div>
+
+    <div id="catalogMeta" class="catalog-meta"></div>
+
+    <div id="catalog" class="grid"></div>
+
+    <div id="emptyState" class="empty" hidden>
+      <div class="empty__art">📚</div>
+      <div class="empty__title">Пока нет кандидатов</div>
+      <div class="empty__text">Предложите первую книгу — клуб проголосует за неё следующей.</div>
+      <button id="emptyCta" class="btn btn--primary" type="button">Предложить первую книгу</button>
+    </div>
+  </section>
+
+  <aside class="side">
+    <section class="panel">
+      <h2 class="panel__title">Предложить книгу</h2>
+      <form id="bookForm" class="form" novalidate>
+        <label class="field">
+          <span class="field__label">Название *</span>
+          <input id="bookTitle" class="input" type="text" maxlength="80" placeholder="Например, Дюна" required>
+        </label>
+        <label class="field">
+          <span class="field__label">Автор</span>
+          <input id="bookAuthor" class="input" type="text" maxlength="60" placeholder="Фрэнк Герберт">
+        </label>
+        <div class="field-row">
+          <label class="field">
+            <span class="field__label">Жанр</span>
+            <select id="bookGenre" class="input input--select"></select>
+          </label>
+          <label class="field">
+            <span class="field__label">Страниц</span>
+            <input id="bookPages" class="input" type="number" min="1" max="9999" placeholder="400">
+          </label>
+        </div>
+        <label class="field">
+          <span class="field__label">Кто предлагает</span>
+          <input id="bookProposer" class="input" type="text" maxlength="40" placeholder="Имя участника">
+        </label>
+        <div id="formError" class="form__error" hidden></div>
+        <button class="btn btn--primary btn--block" type="submit">Добавить в каталог</button>
+      </form>
+    </section>
+
+    <section class="panel">
+      <div class="panel__head">
+        <h2 class="panel__title">Рейтинг голосования</h2>
+        <span id="votesTotal" class="badge">0 голосов</span>
+      </div>
+      <div id="winner" class="winner" hidden></div>
+      <div id="rating" class="rating"></div>
+      <div id="ratingEmpty" class="rating-empty">Голосов пока нет — станьте первым.</div>
+    </section>
+
+    <section class="panel" id="profilePanel" hidden>
+      <h2 class="panel__title">Мои результаты</h2>
+      <div id="profileBody"></div>
+    </section>
+  </aside>
+</main>
+
+<div id="profileModal" class="modal" hidden>
+  <div class="modal__backdrop" data-close></div>
+  <form id="profileForm" class="modal__card" autocomplete="off">
+    <header class="modal__head">
+      <h2>Мой профиль</h2>
+      <button type="button" class="icon-btn" data-close title="Закрыть (Esc)">✕</button>
+    </header>
+    <div class="modal__body">
+      <label class="field">
+        <span class="field__label">Логин</span>
+        <input id="profileLogin" class="input" type="text" readonly>
+      </label>
+      <label class="field">
+        <span class="field__label">Отображаемое имя</span>
+        <input id="profileName" class="input" type="text" maxlength="40" placeholder="Как вас видят в рейтинге и комментариях">
+      </label>
+      <label class="field">
+        <span class="field__label">Текущий пароль</span>
+        <input id="profileCurPass" class="input" type="password" maxlength="50" autocomplete="current-password">
+      </label>
+      <label class="field">
+        <span class="field__label">Новый пароль</span>
+        <input id="profileNewPass" class="input" type="password" maxlength="50" autocomplete="new-password" placeholder="Оставьте пустым, чтобы не менять">
+      </label>
+      <p id="profileError" class="form__error" hidden></p>
+    </div>
+    <footer class="modal__foot">
+      <button type="button" class="btn btn--ghost" data-close>Отмена</button>
+      <button type="submit" class="btn btn--primary">Сохранить</button>
+    </footer>
+  </form>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>
